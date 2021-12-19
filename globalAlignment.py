@@ -5,19 +5,19 @@ mm = -1
 m = 1
 matrix = [[0 for j in range(len(firstString) + 1)] for i in range(len(secondString) + 1)]
 notations = [['' for j in range(len(firstString) + 1)] for i in range(len(secondString) + 1)]
-score = 0
+#score = 0
 diagonal = 0
 for i in range(len(firstString) + 1):
-    matrix[0][i] = i*-1
+    matrix[0][i] = i*gap
 for i in range(len(secondString) + 1):
-    matrix[i][0] = i*-1
+    matrix[i][0] = i*gap
 for i in range(1, len(secondString) + 1):
     for j in range(1, len(firstString) + 1):
         if firstString[j - 1] == secondString[i - 1]:
-            score = 1
+            #score = 1
             diagonal = m
         else:
-            score = 0
+            #score = 0
             diagonal = mm
         maximum = max(matrix[i - 1][j] + gap, matrix[i][j - 1] + gap, matrix[i - 1][j - 1] + diagonal)
         matrix[i][j] = maximum
