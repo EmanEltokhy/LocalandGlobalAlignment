@@ -6,8 +6,8 @@ blosum = MatrixInfo.blosum62
 Nucleotides = ["A", "C", "G", "T"]
 
 def optionality():
-    print("Welcome to our global alignment system")
-    print("Do you want to make global alignment for 1) DNA sequences or 2) Protein sequences 3) Exit the system?")
+    print("Welcome to our Global Alignment System")
+    print("Do you want to make global alignment for 1) DNA sequences or 2) Protein sequences or 3) Exit the system?")
     choose = int(input("Enter your choice, please: "))
     if choose == 1:
         check_input()
@@ -98,8 +98,8 @@ def globalDNA(firstString,secondString):
     print(fs[::-1])
 
 def globalProtein():
-    first_protein_seq = input("Enter the 1st protein sequence: ")
-    second_protein_seq = input("Enter the 2nd protein sequence: ")
+    first_protein_seq = input("Enter the 1st protein sequence: ").upper()
+    second_protein_seq = input("Enter the 2nd protein sequence: ").upper()
     gap = int(input("Enter the gap penalty: "))
     matrix = [[0 for j in range(len(first_protein_seq) + 1)] for i in range(len(second_protein_seq) + 1)]
     notations = [['' for j in range(len(first_protein_seq) + 1)] for i in range(len(second_protein_seq) + 1)]
