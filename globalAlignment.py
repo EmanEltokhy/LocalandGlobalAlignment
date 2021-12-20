@@ -40,7 +40,7 @@ def check_input():
 
 def globalDNA(firstString,secondString):
     gap = -1
-    mm = -1
+    mm = -2
     m = 1
     matrix = [[0 for j in range(len(firstString) + 1)] for i in range(len(secondString) + 1)]
     notations = [['' for j in range(len(firstString) + 1)] for i in range(len(secondString) + 1)]
