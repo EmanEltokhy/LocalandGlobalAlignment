@@ -14,7 +14,6 @@ def diagonalmatch(pair, matrix):
 
 matrix = [[0 for j in range(len(first_protein_seq) + 1)] for i in range(len(second_protein_seq) + 1)]
 notations = [['' for j in range(len(first_protein_seq) + 1)] for i in range(len(second_protein_seq) + 1)]
-# score = 0
 diagonal = 0
 for i in range(len(first_protein_seq) + 1):
     matrix[0][i] = i * gap
@@ -22,10 +21,8 @@ for i in range(len(second_protein_seq) + 1):
     matrix[i][0] = i * gap
 for i in range(1, len(second_protein_seq) + 1):
     for j in range(1, len(first_protein_seq) + 1):
-        diagonal += diagonalmatch((first_protein_seq[j - 1], second_protein_seq[i - 1]), blosum)
-        # MKSTGHKIWER
-        #EEELTKPRLLWALYFNMRRDALSSG      VEKPRILYALYFNMRDSSDE
-        # MKSTSHKIWGR
+        diagonal = diagonalmatch((first_protein_seq[j - 1], second_protein_seq[i - 1]), blosum)
+        # VDSCY   VESLCY   -8
         maximum = max(matrix[i - 1][j] + gap, matrix[i][j - 1] + gap, matrix[i - 1][j - 1] + diagonal)
         matrix[i][j] = maximum
         if maximum == matrix[i - 1][j] + gap:
