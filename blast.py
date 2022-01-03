@@ -1,29 +1,16 @@
 import re
 import warnings
-
-import numpy
 from Bio import BiopythonDeprecationWarning
-
 warnings.simplefilter('ignore', BiopythonDeprecationWarning)
 from Bio.SubsMat.MatrixInfo import blosum62
-import itertools
 
 # take query sequence
 print("enter the query sequence")
 query = input()
 
 # word length
-print("enter the word length")
-word_len = int(input())
+word_len = 3
 
-
-# word threshold
-# print("enter the word threshold")
-# word_thres = int(input())
-
-# hsp threshold
-# print("enter the hsp threshold")
-# hsp_thres = int(input())
 
 # step 1 remove low complexity and repeated sequence
 def remove_repeats():
@@ -94,7 +81,7 @@ def neighbourwords():
                  'B', 'Z', 'X']
     str2 = ""
     score = 0
-    # blosum62_dic = blosum62
+
     compination_dic = {}
     for i in range(len(word)):
         for j in range(0, 2):
@@ -120,7 +107,7 @@ def neighbourwords():
 print("n" , neighbourwords())
 
 
-# filter seeds for specfic threshold
+# filter seeds for specific threshold
 def threshold(t=11):
     seeds = {}
     neighwords = neighbourwords()
@@ -149,15 +136,14 @@ def exactmatch():
         databaseseq.seek(0)
         if word_hit[seed] == []:
             del word_hit[seed]
-
     return word_hit
 
 
-print("extend " , exactmatch())
+print("extend ", exactmatch())
 
 
 # extend seeds
-def extention(dic ,hspthres=15):
+def extention(dic):
     database = databasefile.readlines()
     global query
     for seed in dic:
@@ -171,116 +157,95 @@ def extention(dic ,hspthres=15):
             pattern1 = '.' + seed[1] + seed[2]
             pattern2 = seed[0] + '.' + seed[2]
             pattern3 = seed[0] + seed[1] + '.'
-            res = re.compile(pattern1 or pattern2 or pattern3)
-            F_index_query = res.search(query).start()
+            pattern = pattern1 + '|' + pattern2 + '|' + pattern3
+            try:
+                F_index_query = (re.search(pattern, query)).start()
+            except:
+                continue
             L_index_query = F_index_query + 2
-            final_query = query[F_index_query] + query[F_index_query+1] + query[F_index_query+2]
+            final_query = seed[0] + seed[1] + seed[2]
             score = cal_score(seed, final_query, blosum62)
             extend_from_right = L_index_query + 1
             extend_from_left = F_index_query - 1
             Move_to_right = L_index_database + 1
             Move_to_left = F_index_database - 1
             while Move_to_right< len(seq) and extend_from_right< len(query) and Move_to_left >= 0 and extend_from_left >= 0:
-                score = score + calculate_score(query[extend_from_right],seq[Move_to_right],blosum62)
-                if(score >= hspthres):
-                    final_query= final_query + query[extend_from_right]
+                score = score + calculate_score(query[extend_from_right], seq[Move_to_right], blosum62)
+                final_query= final_query + query[extend_from_right]
                 extend_from_right = extend_from_right + 1
                 Move_to_right = Move_to_right + 1
 
                 score = score + calculate_score(query[extend_from_left], seq[Move_to_left], blosum62)
-                if (score >= hspthres):
-                    final_query = query[extend_from_left] + final_query
+                final_query = query[extend_from_left] + final_query
                 extend_from_left = extend_from_left - 1
                 Move_to_left = Move_to_left - 1
 
             while Move_to_right< len(seq) and extend_from_right< len(query):
                 score = score + calculate_score(query[extend_from_right],seq[Move_to_right],blosum62)
-                if(score >= hspthres):
-                    final_query= final_query + query[extend_from_right]
+                final_query= final_query + query[extend_from_right]
                 extend_from_right = extend_from_right + 1
                 Move_to_right = Move_to_right + 1
             while Move_to_left >= 0 and extend_from_left >=0 :
                 score = score + calculate_score(query[extend_from_left], seq[Move_to_left], blosum62)
-                if (score >= hspthres):
-                    final_query = query[extend_from_left] + final_query
+                final_query = query[extend_from_left] + final_query
                 extend_from_left = extend_from_left - 1
                 Move_to_left = Move_to_left - 1
             scores[score] = final_query
-        maxKey = max(scores, key=scores.get)
+        try:
+            maxKey = max(scores, key=scores.get)
+        except:
+            continue
         print(scores[maxKey])
-
-        # right = extension_thresholf_right(F_index_database,seq,seed,scores[maxKey])
-        # left = extension_thresholf_left(L_index_database,seq,seed,scores[maxKey])
+        right = extension_threshold_right(F_index_database,seq,seed,scores[maxKey])
+        left = extension_threshold_left(L_index_database,seq,seed,scores[maxKey])
         final = ''
-        res = None
-        # print(right)
-        # print(left)
-        # for k in range(left, right, 1):
-        #     final = final + (scores[maxKey])[k]
-        # print(final)
-        # print(maxKey)
+        for k in range(left, right, 1):
+            final = final + (scores[maxKey])[k]
+        print(seed ," ", final)
 
 
-
-def extension_thresholf_right(F_index_database,seq,seed,final_query):
+def extension_threshold_right(F_index_database,seq,seed,final_query):
     array = []
     pattern1 = '.' + seed[1] + seed[2]
     pattern2 = seed[0] + '.' + seed[2]
     pattern3 = seed[0] + seed[1] + '.'
     F_index_query = re.search(pattern1 or pattern2 or pattern3, final_query).start()
     # L_index_query = F_index_query + 2
+    accum = 0
     for i in range(F_index_query,len(final_query)):
-        array.append(calculate_score(final_query[i],seq[F_index_database],blosum62))
+        print(calculate_score(final_query[i],seq[F_index_database],blosum62))
+        accum = accum + calculate_score(final_query[i],seq[F_index_database],blosum62)
+        array.append(accum)
         F_index_database = F_index_database + 1
-    max = numpy.max(array)
-    return numpy.where(max)
+    max = 0
+    index = 0
+    for i in range(len(array)):
+        if array[i] >= max:
+            max = array[i]
+            index = i
+    return index + F_index_query + 1
 
-def extension_thresholf_left(L_index_database, seq, seed, final_query):
+def extension_threshold_left(L_index_database, seq, seed, final_query):
     array = []
     pattern1 = '.' + seed[1] + seed[2]
     pattern2 = seed[0] + '.' + seed[2]
     pattern3 = seed[0] + seed[1] + '.'
     F_index_query = re.search(pattern1 or pattern2 or pattern3, final_query).start()
     L_index_query = F_index_query + 2
+    accum = 0
     for i in range(L_index_query, 0, -1):
-        array.append(calculate_score(final_query[i], seq[L_index_database], blosum62))
+        accum = accum + calculate_score(final_query[i], seq[L_index_database], blosum62)
+        array.append(accum)
         L_index_database = L_index_database - 1
-    max = numpy.max(array)
-    return numpy.where(max)
-        # print(max(scores,key = scores.get))
+    max = 0
+    index = 0
+    for i in range(len(array)):
+        if array[i] >= max:
+            max = array[i]
+            index = i
+    return L_index_query - index
 
-            # print(query)
-            # print(seq[L_index_database])
-            # print(query[L_index_query])
-    # for hit in len(query):
-    #     for j in range(word_exact_hit, len(value)):
-    #         for wordhit in key:
-    #             max_hits = []
-    #             current_score = 0
-    #         max_score = 0
-    #         # extend to right
-    #         for j in range(len(query)):
-    #             current_score += cal_score(query[j], database[wordhit], blosum62)
-    #             wordhit = wordhit + 1
-    #         if current_score >= max_score:
-    #             max_score = max_score + current_score
-    #         elif max_score - current_score > hspthres:
-    #             break
-    #
-    #             # extend to left
-    #             current_score = max_score
-    #             for k in range(wordhit - 1, -1, -1):
-    #                 # blossom
-    #                 current_score += cal_score(query[k], database[wordhit], blosum62)
-    #                 wordhit = wordhit - 1
-    #             if current_score >= max_score:
-    #                 max_score = max_score + cal_score(query[k], database[wordhit[2] + wordhit[1]])
-    #             elif max_score - current_score > hspthres:
-    #                 break
-    #             max_hits.append(max_score)
 
-    # return max(max_hits)
-
-extention(exactmatch(),15)
+extention(exactmatch())
 # close file
 databasefile.close()
